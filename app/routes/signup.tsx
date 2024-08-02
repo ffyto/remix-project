@@ -37,12 +37,12 @@ export async function action({ request }: ActionFunctionArgs) {
 	} = formData || {};
 	const response = signup({ name, email, password, confirmPassword });
 	const session = await getSession(request.headers.get("Cookie"));
-	session.set("userEmail", email);
+	session.set("user", response);
 
 	if (!response) {
 		return json({ error: "Failed to sign up" }, { status: 401 });
 	} else {
-		return redirect("/", {
+		return redirect("/dashboard", {
 			headers: { "Set-Cookie": await commitSession(session) },
 		});
 	}

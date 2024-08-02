@@ -8,7 +8,7 @@ type User = {
 
 const usersFilePath = "app/utils/users.js";
 
-const readUsersFromFile = (): User[] => {
+export const readUsersFromFile = (): User[] => {
 	if (!fs.existsSync(usersFilePath)) {
 		fs.writeFileSync(usersFilePath, "[]", "utf8");
 	}
@@ -56,7 +56,7 @@ export const signup = ({
 	writeUsersToFile(users);
 	console.log("User registered successfully.");
 
-	return true;
+	return newUser;
 };
 
 export const login = ({
@@ -72,5 +72,5 @@ export const login = ({
 	if (!user || user.password !== password) {
 		return false;
 	}
-	return true;
+	return user;
 };

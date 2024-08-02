@@ -28,5 +28,15 @@
     "name": "mauro 10",
     "email": "mauro@10.com",
     "password": "12345678"
+  },
+  {
+    "name": "Mauro Arango",
+    "email": "mauro@arango.com",
+    "password": "12345678"
+  },
+  {
+    "name": "Carlos Arango",
+    "email": "carlos@arango.com",
+    "password": "12345678"
   }
 ]
