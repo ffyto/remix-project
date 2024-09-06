@@ -1,12 +1,12 @@
 import { Link, useNavigate } from "react-router-dom";
 
 import { Menu } from "~/components/ui/menu";
-import { LoaderFunction } from "@remix-run/node";
+import { LoaderFunction, redirect } from "@remix-run/node";
 import { getSession } from "~/utils/session.server";
-import { useLoaderData, json } from "@remix-run/react";
+import { useLoaderData, json, Outlet } from "@remix-run/react";
 import { useState } from "react";
 
-type Payment = {
+export type Payment = {
 	id: number;
 	amount: number;
 	date: string;
@@ -29,14 +29,14 @@ const payments: Array<Payment> = [
 	{
 		id: 3,
 		amount: 180,
-		date: "2024-06-25",
-		status: "paid",
+		date: "2024-09-10",
+		status: "pending",
 	},
 	{
 		id: 4,
 		amount: 220,
-		date: "2024-05-20",
-		status: "paid",
+		date: "2024-09-15",
+		status: "pending",
 	},
 	{
 		id: 5,
@@ -50,30 +50,37 @@ const payments: Array<Payment> = [
 		date: "2024-03-15",
 		status: "paid",
 	},
+	{
+		id: 7,
+		amount: 230,
+		date: "2024-09-20",
+		status: "pending",
+	},
+	{
+		id: 8,
+		amount: 175,
+		date: "2024-09-25",
+		status: "pending",
+	},
 ];
 
 export const loader: LoaderFunction = async ({ request }) => {
 	const session = await getSession(request.headers.get("Cookie"));
 	const user = session.get("user");
 
-	return json({ user });
+	if (!user) {
+		return redirect("/login");
+	}
+
+	return json({
+		user,
+		payments,
+	});
 };
 
 export default function Dashboard() {
 	const [startDate, setStartDate] = useState<string>("");
 	const [endDate, setEndDate] = useState<string>("");
-
-	const recentPendingPayment = payments.find(
-		(payment) => payment.status === "pending"
-	);
-
-	const filteredPayments = payments.filter((payment) => {
-		const paymentDate = new Date(payment.date);
-		const start = startDate ? new Date(startDate) : null;
-		const end = endDate ? new Date(endDate) : null;
-
-		return (!start || paymentDate >= start) && (!end || paymentDate <= end);
-	});
 
 	return (
 		<div className="min-h-screen flex flex-col">
@@ -85,10 +92,7 @@ export default function Dashboard() {
 					endDate={endDate}
 					setEndDate={setEndDate}
 				/>
-				<MainContent
-					payments={filteredPayments}
-					recentPendingPayment={recentPendingPayment}
-				/>
+				<Outlet />
 			</div>
 		</div>
 	);
@@ -96,7 +100,6 @@ export default function Dashboard() {
 
 function Navbar() {
 	const { user } = useLoaderData();
-	console.log("🚀 ~ Navbar ~ user:", user);
 
 	const navigate = useNavigate();
 	const menuOptions = [
@@ -106,7 +109,13 @@ function Navbar() {
 		},
 		{
 			label: "Cerrar sesión",
-			action: () => navigate("/login"),
+			action: () => {
+				fetch("/logout", {
+					method: "POST",
+				}).then(() => {
+					navigate("/login");
+				});
+			},
 		},
 	];
 
@@ -116,7 +125,7 @@ function Navbar() {
 				Dashboard
 			</Link>
 			<Menu
-				buttonName={user.name}
+				buttonName={user?.name}
 				options={menuOptions}
 				buttonClassName="focus:outline-none"
 			/>
@@ -141,8 +150,9 @@ function Sidebar({
 		setStartDate("");
 		setEndDate("");
 	};
+
 	return (
-		<div className="w-64 bg-gray-100 p-6 border-r border-gray-200">
+		<div className="flex w-64 bg-gray-100 p-6 border-r border-gray-200 flex-col">
 			<h2 className="text-xl font-semibold text-gray-900 mb-4">Filtros</h2>
 			<div className="mb-4">
 				<label htmlFor="start-date" className="block text-gray-700 mb-1">
@@ -174,54 +184,12 @@ function Sidebar({
 			>
 				Borrar Filtros
 			</button>
-		</div>
-	);
-}
-
-interface MainContentProps {
-	payments: Array<Payment>;
-	recentPendingPayment?: Payment;
-}
-
-function MainContent({ payments, recentPendingPayment }: MainContentProps) {
-	return (
-		<div className="flex-1 p-6 bg-white">
-			<h1 className="text-2xl font-bold text-gray-900 mb-6">Mis Pagos</h1>
-			<div className="mb-6">
-				<h2 className="text-xl font-semibold text-gray-700 mb-2">
-					Próximo pago
-				</h2>
-				{recentPendingPayment ? (
-					<div className="p-4 bg-yellow-50 border border-yellow-400 rounded-md">
-						<p className="text-lg text-gray-800">
-							Monto: ${recentPendingPayment.amount}
-						</p>
-						<p className="text-gray-600">Fecha: {recentPendingPayment.date}</p>
-					</div>
-				) : (
-					<p className="text-gray-600">No tienes pagos pendientes.</p>
-				)}
-			</div>
-			<div>
-				<h2 className="text-xl font-semibold text-gray-700 mb-2">
-					Pagos realizados
-				</h2>
-				<ul className="space-y-4">
-					{payments
-						.filter((payment) => payment.status === "paid")
-						.map((payment) => (
-							<li
-								key={payment.id}
-								className="p-4 bg-green-50 border border-green-400 rounded-md"
-							>
-								<p className="text-lg text-gray-800">
-									Monto: ${payment.amount}
-								</p>
-								<p className="text-gray-600">Fecha: {payment.date}</p>
-							</li>
-						))}
-				</ul>
-			</div>
+			<Link
+				to="/dashboard/pending-payments"
+				className="text-center w-full px-3 py-2 mt-4 text-sm font-medium text-white bg-green-500 hover:bg-green-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+			>
+				Ver pagos pendientes
+			</Link>
 		</div>
 	);
 }
