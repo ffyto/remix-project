@@ -1,6 +1,6 @@
 import fs from "fs";
 
-type User = {
+export type User = {
 	name: string;
 	email: string;
 	password: string;

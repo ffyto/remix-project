@@ -1,10 +1,13 @@
 import { Link, useNavigate } from "react-router-dom";
 
 import { Menu } from "~/components/ui/menu";
-import { LoaderFunction, redirect } from "@remix-run/node";
+import { redirect, json } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { getSession } from "~/utils/session.server";
-import { useLoaderData, json, Outlet } from "@remix-run/react";
+import { useLoaderData, Outlet } from "@remix-run/react";
+
 import { useState } from "react";
+import { User } from "~/utils/authentication";
 
 export type Payment = {
 	id: number;
@@ -64,12 +67,12 @@ const payments: Array<Payment> = [
 	},
 ];
 
-export const loader: LoaderFunction = async ({ request }) => {
+export const loader = async ({ request }: LoaderFunctionArgs) => {
 	const session = await getSession(request.headers.get("Cookie"));
-	const user = session.get("user");
+	const user = session.get("user") as User;
 
 	if (!user) {
-		return redirect("/login");
+		throw redirect("/login");
 	}
 
 	const url = new URL(request.url);
@@ -94,7 +97,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 export default function Dashboard() {
 	const [startDate, setStartDate] = useState<string>("");
 	const [endDate, setEndDate] = useState<string>("");
-	const { payments } = useLoaderData() as Array<Payment>;
+	const { payments } = useLoaderData<typeof loader>();
 
 	return (
 		<div className="min-h-screen flex flex-col relative">
@@ -115,7 +118,7 @@ export default function Dashboard() {
 }
 
 function Navbar() {
-	const { user } = useLoaderData();
+	const { user } = useLoaderData<typeof loader>();
 	const navigate = useNavigate();
 
 	const menuOptions = [

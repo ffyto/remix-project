@@ -1,8 +1,8 @@
-import { Link, Form, redirect, json } from "@remix-run/react";
+import { Link, Form, redirect } from "@remix-run/react";
 import { useRemixForm, getValidatedFormData } from "remix-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { getSession, commitSession } from "../utils/session.server";
-
+import { json } from "@remix-run/node";
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { z } from "zod";
 import { TextField } from "~/components/form/text-field";
@@ -28,7 +28,7 @@ export async function action({ request }: ActionFunctionArgs) {
 	const session = await getSession(request.headers.get("Cookie"));
 
 	if (!response) {
-		return json({ error: "Failed to log in" }, { status: 401 });
+		throw json({ error: "Failed to log in" }, { status: 401 });
 	} else {
 		session.set("user", response);
 

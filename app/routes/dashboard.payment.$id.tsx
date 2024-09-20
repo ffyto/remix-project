@@ -1,23 +1,19 @@
-import { LoaderFunction, json } from "@remix-run/node";
 import {
-	useLoaderData,
 	isRouteErrorResponse,
 	useRouteError,
 	useOutletContext,
+	useParams,
 } from "@remix-run/react";
-
-export const loader: LoaderFunction = async ({ params }) => {
-	return json({ params });
-};
+import { Payment } from "./dashboard/route";
 
 export default function PaymentDetail() {
-	const { params } = useLoaderData();
-	const payments = useOutletContext();
-	const payment = payments.find((p) => p.id === parseInt(params.id));
+	const { id } = useParams();
+	const payments = useOutletContext() as Array<Payment>;
+	const payment = payments.find((p) => p.id === parseInt(id as string));
 
 	if (!payment) {
 		// Lanzar un error 404 si no se encuentra el pago
-		throw new Response("Pago no encontrado", { status: 404 });
+		throw new Response("Pago no encontrado", { status: 404, statusText: "" });
 	}
 
 	return (
