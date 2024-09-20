@@ -1,4 +1,4 @@
-import { useRouteLoaderData } from "@remix-run/react";
+import { Link, useRouteLoaderData } from "@remix-run/react";
 import { Payment } from "./dashboard/route";
 
 export default function MainContent() {
@@ -14,7 +14,7 @@ export default function MainContent() {
 	const paidPayments = payments.filter((payment) => payment.status === "paid");
 
 	return (
-		<div className="flex-1 p-6 bg-white">
+		<div className="mt-12">
 			<h1 className="text-2xl font-bold text-gray-900 mb-6">Mis Pagos</h1>
 
 			<div className="mb-6">
@@ -70,6 +70,7 @@ export default function MainContent() {
 						>
 							<p className="text-lg text-gray-800">Monto: ${payment.amount}</p>
 							<p className="text-gray-600">Fecha: {payment.date}</p>
+							<Link to={`/dashboard/payment/${payment.id}`}>Ver pago</Link>
 						</li>
 					))}
 				</ul>

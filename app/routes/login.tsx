@@ -30,6 +30,8 @@ export async function action({ request }: ActionFunctionArgs) {
 	if (!response) {
 		return json({ error: "Failed to log in" }, { status: 401 });
 	} else {
+		session.set("user", response);
+
 		return redirect("/dashboard", {
 			headers: { "Set-Cookie": await commitSession(session) },
 		});
