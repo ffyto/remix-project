@@ -1,5 +1,5 @@
 import * as ReactAria from "react-aria-components";
-import { cx } from "~/utils/cva.config";
+
 import type { ForwardedRef, ReactNode } from "react";
 import { forwardRef } from "react";
 import FieldLabel from "./label";
@@ -10,6 +10,7 @@ import {
 	useController,
 } from "react-hook-form";
 
+// eslint-disable-next-line import/namespace
 export interface BaseTextFieldProps extends ReactAria.TextFieldProps {}
 
 interface BasicTextFieldProps extends BaseTextFieldProps {
@@ -24,6 +25,8 @@ export const BasicTextField = forwardRef(function BasicTextField(
 		className,
 		placeholder,
 		label,
+		errorMessage,
+		isInvalid = false,
 		isRequired = true,
 		type = "text",
 		...props
@@ -31,15 +34,26 @@ export const BasicTextField = forwardRef(function BasicTextField(
 	ref: ForwardedRef<HTMLInputElement>
 ) {
 	return (
-		<ReactAria.TextField {...props} isRequired={isRequired}>
-			{label ? <FieldLabel isRequired={isRequired}>{label}</FieldLabel> : null}
-			<ReactAria.Input
-				ref={ref}
-				placeholder={placeholder}
-				className={className}
-				type={type}
-			/>
-		</ReactAria.TextField>
+		<div>
+			<ReactAria.TextField {...props} isRequired={isRequired}>
+				{label ? (
+					<FieldLabel isRequired={isRequired}>{label}</FieldLabel>
+				) : null}
+				<ReactAria.Input
+					ref={ref}
+					placeholder={placeholder}
+					className={`${className} ${
+						isInvalid
+							? "border-red-500 focus:ring-red-500"
+							: "border-gray-300 focus:ring-indigo-500"
+					} appearance-none block w-full px-3 py-2 border rounded-md shadow-sm sm:text-sm`}
+					type={type}
+				/>
+			</ReactAria.TextField>
+			{errorMessage && (
+				<p className="text-red-500 text-sm mt-0.5 mb-1.5">{errorMessage}</p>
+			)}
+		</div>
 	);
 });
 

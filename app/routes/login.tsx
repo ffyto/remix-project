@@ -9,8 +9,11 @@ import { TextField } from "~/components/form/text-field";
 import { login } from "~/utils/authentication";
 
 const LoginSchema = z.object({
-	email: z.string({ required_error: "El correo electrónico es requerido." }),
-	password: z.string({ required_error: "La contraseña es requerida." }),
+	email: z
+		.string()
+		.min(1, { message: "El correo electrónico es requerido." })
+		.email({ message: "Debe ser un correo válido." }),
+	password: z.string().min(1, { message: "La contraseña es requerida." }),
 });
 
 type FormData = z.infer<typeof LoginSchema>;

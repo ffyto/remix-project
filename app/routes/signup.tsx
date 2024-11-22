@@ -8,16 +8,28 @@ import { getSession, commitSession } from "../utils/session.server";
 
 import { signup } from "~/utils/authentication";
 
-const SignupSchema = z.object({
-	name: z.string({ required_error: "El nombre es requerido." }).min(5),
-	email: z.string({ required_error: "El correo electrónico es requerido." }),
-	password: z.string({ required_error: "La contraseña es requerida." }).min(8),
-	confirmPassword: z
-		.string({
-			required_error: "Confirmar contraseña es requerida.",
-		})
-		.min(8),
-});
+const SignupSchema = z
+	.object({
+		name: z
+			.string()
+			.min(1, { message: "El nombre es requerido." })
+			.min(5, { message: "Debe tener al menos 5 caracteres." }),
+		email: z
+			.string()
+			.min(1, { message: "El correo electrónico es requerido." })
+			.email({ message: "Debe ser un correo válido." }),
+		password: z
+			.string()
+			.min(1, { message: "La contraseña es requerida." })
+			.min(8, { message: "Debe tener al menos 8 caracteres." }),
+		confirmPassword: z.string().min(1, {
+			message: "Confirmar contraseña es requerida.",
+		}),
+	})
+	.refine((data) => data.password === data.confirmPassword, {
+		message: "Las contraseñas no coinciden.",
+		path: ["confirmPassword"],
+	});
 
 type FormData = z.infer<typeof SignupSchema>;
 
